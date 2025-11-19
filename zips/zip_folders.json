@@ -1,0 +1,131 @@
+{ "archives": [
+  { "zip": "RTL-CareUnit.zip", "folder": "RTL-CareUnit" }
+,
+  { "zip": "agradplugin.zip", "folder": "agradplugin" }
+,
+  { "zip": "contact-form-7_v6.1.2.zip", "folder": "contact-form-7" }
+,
+  { "zip": "contact-form-7_v6.1.3.zip", "folder": "contact-form-7" }
+,
+  { "zip": "contact-form-7_v6.1.zip", "folder": "contact-form-7" }
+,
+  { "zip": "elementor-pro_v3.30.1.zip", "folder": "elementor-pro" }
+,
+  { "zip": "elementor-pro_v3.32.2-fa.zip", "folder": "elementor-pro" }
+,
+  { "zip": "elementor_v3.30.4.zip", "folder": "elementor" }
+,
+  { "zip": "elementor_v3.32.4.zip", "folder": "elementor" }
+,
+  { "zip": "elementor_v3.33.1.zip", "folder": "elementor" }
+,
+  { "zip": "hello-elementor_v3.4.4.zip", "folder": "hello-elementor" }
+,
+  { "zip": "insert-headers-and-footers_v2.3.0.zip", "folder": "insert-headers-and-footers" }
+,
+  { "zip": "insert-headers-and-footers_v2.3.1.zip", "folder": "insert-headers-and-footers" }
+,
+  { "zip": "jet-blocks_v1.3.19.zip", "folder": "jet-blocks" }
+,
+  { "zip": "jet-blocks_v1.3.20.zip", "folder": "jet-blocks" }
+,
+  { "zip": "jet-booking_v3.8.1.zip", "folder": "jet-booking" }
+,
+  { "zip": "jet-booking_v3.8.5.zip", "folder": "jet-booking" }
+,
+  { "zip": "jet-compare-wishlist_v1.5.10.zip", "folder": "jet-compare-wishlist" }
+,
+  { "zip": "jet-compare-wishlist_v1.5.12.zip", "folder": "jet-compare-wishlist" }
+,
+  { "zip": "jet-elements_v2.7.10.zip", "folder": "jet-elements" }
+,
+  { "zip": "jet-elements_v2.7.9.zip", "folder": "jet-elements" }
+,
+  { "zip": "jet-engine_v3.7.2.zip", "folder": "jet-engine" }
+,
+  { "zip": "jet-engine_v3.7.6.zip", "folder": "jet-engine" }
+,
+  { "zip": "jet-popup_v2.0.16.zip", "folder": "jet-popup" }
+,
+  { "zip": "jet-popup_v2.0.18.zip", "folder": "jet-popup" }
+,
+  { "zip": "jet-search_v3.5.14.zip", "folder": "jet-search" }
+,
+  { "zip": "jet-search_v3.5.8.zip", "folder": "jet-search" }
+,
+  { "zip": "jet-smart-filters_v3.6.10.zip", "folder": "jet-smart-filters" }
+,
+  { "zip": "jet-smart-filters_v3.6.8.zip", "folder": "jet-smart-filters" }
+,
+  { "zip": "jet-tabs_v2.2.11.zip", "folder": "jet-tabs" }
+,
+  { "zip": "jet-tabs_v2.2.9.zip", "folder": "jet-tabs" }
+,
+  { "zip": "jet-theme-core_v2.3.0.zip", "folder": "jet-theme-core" }
+,
+  { "zip": "jet-woo-product-gallery_v2.1.22.zip", "folder": "jet-woo-product-gallery" }
+,
+  { "zip": "jet-woo-product-gallery_v2.2.2.zip", "folder": "jet-woo-product-gallery" }
+,
+  { "zip": "js_composer_v8.5.zip", "folder": "js_composer" }
+,
+  { "zip": "js_composer_v8.6.1.zip", "folder": "js_composer" }
+,
+  { "zip": "litespeed-cache_v7.3.0.zip", "folder": "litespeed-cache" }
+,
+  { "zip": "litespeed-cache_v7.5.0.zip", "folder": "litespeed-cache" }
+,
+  { "zip": "litespeed-cache_v7.6.2.zip", "folder": "litespeed-cache" }
+,
+  { "zip": "persian-elementor_v2.7.11.zip", "folder": "persian-elementor" }
+,
+  { "zip": "persian-elementor_v2.7.14.zip", "folder": "persian-elementor" }
+,
+  { "zip": "persian-woocommerce_v9.3.0.zip", "folder": "persian-woocommerce" }
+,
+  { "zip": "persian-woocommerce_v9.3.1.zip", "folder": "persian-woocommerce" }
+,
+  { "zip": "persian-woocommerce_v9.3.2.zip", "folder": "persian-woocommerce" }
+,
+  { "zip": "query-monitor_v3.19.0.zip", "folder": "query-monitor" }
+,
+  { "zip": "query-monitor_v3.20.0.zip", "folder": "query-monitor" }
+,
+  { "zip": "redis-cache_v2.6.3.zip", "folder": "redis-cache" }
+,
+  { "zip": "redis-cache_v2.7.0.zip", "folder": "redis-cache" }
+,
+  { "zip": "revslider_v6.7.35.zip", "folder": "revslider" }
+,
+  { "zip": "revslider_v6.7.37.zip", "folder": "revslider" }
+,
+  { "zip": "seo-by-rank-math-pro_v3.0.92.zip", "folder": "seo-by-rank-math-pro" }
+,
+  { "zip": "seo-by-rank-math-pro_v3.0.97.zip", "folder": "seo-by-rank-math-pro" }
+,
+  { "zip": "sonicctc.zip", "folder": "sonicctc" }
+,
+  { "zip": "woodmart_v8.2.8.zip", "folder": "woodmart" }
+,
+  { "zip": "wordpress-seo-premium_v25.6.zip", "folder": "wordpress-seo-premium" }
+,
+  { "zip": "wordpress-seo_v25.6.zip", "folder": "wordpress-seo" }
+,
+  { "zip": "wordpress-seo_v26.1.1.zip", "folder": "wordpress-seo" }
+,
+  { "zip": "wordpress-seo_v26.1.zip", "folder": "wordpress-seo" }
+,
+  { "zip": "wordpress-seo_v26.4.zip", "folder": "wordpress-seo" }
+,
+  { "zip": "wordpress.zip", "folder": "wordpress" }
+,
+  { "zip": "wp-parsidate_v5.1.6.zip", "folder": "wp-parsidate" }
+,
+  { "zip": "wp-parsidate_v5.1.8.zip", "folder": "wp-parsidate" }
+,
+  { "zip": "wp-rocket_v3.19.2.zip", "folder": "wp-rocket" }
+,
+  { "zip": "wp-rocket_v3.19.4.zip", "folder": "wp-rocket" }
+,
+  { "zip": "xtra_v5.1.zip", "folder": "xtra" }
+] }

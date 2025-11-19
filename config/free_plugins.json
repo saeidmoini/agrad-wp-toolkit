@@ -1,0 +1,14 @@
+{
+    "plugins": [
+        "contact-form-7",
+        "elementor",
+        "wordpress-seo",
+        "persian-elementor",
+        "wp-parsidate",
+        "persian-woocommerce",
+        "litespeed-cache",
+        "insert-headers-and-footers",
+        "redis-cache",
+        "query-monitor"
+    ]
+}

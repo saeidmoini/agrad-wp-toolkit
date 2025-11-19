@@ -1,0 +1,144 @@
+{
+    "updates": [
+        {
+            "type": "plugins",
+            "name": "agradplugin",
+            "force": true
+        },
+        {
+            "type": "plugins",
+            "name": "contact-form-7"
+        },
+        {
+            "type": "plugins",
+            "name": "elementor-pro"
+        },
+        {
+            "type": "plugins",
+            "name": "jet-blocks"
+        },
+        {
+            "type": "plugins",
+            "name": "jet-booking"
+        },
+        {
+            "type": "plugins",
+            "name": "jet-compare-wishlist"
+        },
+        {
+            "type": "plugins",
+            "name": "jet-elements"
+        },
+        {
+            "type": "plugins",
+            "name": "jet-engine"
+        },
+        {
+            "type": "plugins",
+            "name": "jet-popup"
+        },
+        {
+            "type": "plugins",
+            "name": "jet-search"
+        },
+        {
+            "type": "plugins",
+            "name": "jet-smart-filters"
+        },
+        {
+            "type": "plugins",
+            "name": "jet-tabs"
+        },
+        {
+            "type": "plugins",
+            "name": "jet-theme-core"
+        },
+        {
+            "type": "plugins",
+            "name": "jet-woo-product-gallery"
+        },
+        {
+            "type": "plugins",
+            "name": "js_composer"
+        },
+        {
+            "type": "plugins",
+            "name": "revslider"
+        },
+        {
+            "type": "plugins",
+            "name": "RTL-CareUnit",
+            "force": true
+        },
+        {
+            "type": "plugins",
+            "name": "seo-by-rank-math-pro"
+        },
+        {
+            "type": "plugins",
+            "name": "sonicctc"
+        },
+        {
+            "type": "plugins",
+            "name": "wp-rocket"
+        },
+        {
+            "type": "plugins",
+            "name": "elementor"
+        },
+        {
+            "type": "plugins",
+            "name": "redis-cache"
+        },
+        {
+            "type": "plugins",
+            "name": "query-monitor"
+        },
+        {
+            "type": "plugins",
+            "name": "wp-parsidate"
+        },
+        {
+            "type": "plugins",
+            "name": "persian-woocommerce"
+        },
+        {
+            "type": "plugins",
+            "name": "persian-elementor"
+        },
+        {
+            "type": "plugins",
+            "name": "litespeed-cache"
+        },
+        {
+            "type": "plugins",
+            "name": "wordpress-seo"
+        },
+        {
+            "type": "plugins",
+            "name": "wordpress-seo-premium"
+        },
+        {
+            "type": "plugins",
+            "name": "wp-headers-and-footers"
+        },
+        {
+            "type": "themes",
+            "name": "hello-elementor"
+        },
+        {
+            "type": "themes",
+            "name": "woodmart"
+        },
+        {
+            "type": "themes",
+            "name": "xtra"
+        },
+        {
+            "type": "wordpress",
+            "name": "wordpress"
+        }
+    ]
+}
+
+

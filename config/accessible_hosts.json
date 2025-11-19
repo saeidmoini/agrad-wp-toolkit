@@ -1,0 +1,13 @@
+{
+    "hosts": [
+        "*.google.com",
+        "*.gstatic.com",
+        "*.torob.com",
+        "torob.com",
+        "*.payamak-panel.com",
+        "*.melipayamak.com",
+        "*.wordpress.org",
+        "arvancloud.ir",
+        "*.arvancloud.ir"
+    ]
+}
