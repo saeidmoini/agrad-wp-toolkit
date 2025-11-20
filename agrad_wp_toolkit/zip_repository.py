@@ -11,13 +11,15 @@ from . import paths
 
 logger = logging.getLogger(__name__)
 
-ZIP_PATTERN = re.compile(r"(?P<slug>[a-zA-Z0-9\-_\.]+)_v(?P<version>[0-9][0-9a-zA-Z\.\-_]*)\.zip")
+ZIP_PATTERN = re.compile(
+    r"(?P<slug>[a-zA-Z0-9\-_\.]+?)(?:_v(?P<version>[0-9][0-9a-zA-Z\.\-_]*))?\.zip$"
+)
 
 
 @dataclass
 class ZipArtifact:
     slug: str
-    version: str
+    version: Optional[str]
     path: Path
 
 

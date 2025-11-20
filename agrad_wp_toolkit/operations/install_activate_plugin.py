@@ -88,7 +88,9 @@ def _install_plugin(
     if source == "zip":
         artifact = repo.get(slug)
         if not artifact:
-            raise RuntimeError(f"No ZIP found for {slug}. Place {slug}_v*.zip inside zips/.")
+            raise RuntimeError(
+                f"No ZIP found for {slug}. Place {slug}.zip or {slug}_v*.zip inside zips/."
+            )
         args = ["plugin", "install", str(artifact.path)]
     else:
         args = ["plugin", "install", slug]
@@ -109,7 +111,9 @@ def _update_plugin(
     if source == "zip":
         artifact = repo.get(slug)
         if not artifact:
-            raise RuntimeError(f"No ZIP found for {slug}. Place {slug}_v*.zip inside zips/.")
+            raise RuntimeError(
+                f"No ZIP found for {slug}. Place {slug}.zip or {slug}_v*.zip inside zips/."
+            )
         args = ["plugin", "install", str(artifact.path), "--force"]
     else:
         args = ["plugin", "update", slug]
