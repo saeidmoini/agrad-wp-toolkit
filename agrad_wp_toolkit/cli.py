@@ -27,7 +27,7 @@ ACTIONS = {
     "download-free": ("Download free plugins", free_downloads.run_free_downloads),
     "inventory": ("Collect plugin inventory", inventory.run_inventory),
     "install-plugin": (
-        "Install/activate a plugin everywhere",
+        "Install/activate plugins or install themes everywhere",
         install_activate_plugin.run_install_activate_plugin,
     ),
     "download-links": (

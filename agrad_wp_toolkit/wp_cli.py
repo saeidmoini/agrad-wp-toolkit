@@ -86,6 +86,11 @@ def plugin_is_installed(site_path: Path, slug: str, run_as: str | None = None) -
     return result.returncode == 0
 
 
+def theme_is_installed(site_path: Path, slug: str, run_as: str | None = None) -> bool:
+    result = _run_wp(["theme", "is-installed", slug], site_path, run_as=run_as)
+    return result.returncode == 0
+
+
 def activate_plugin(site_path: Path, slug: str, run_as: str | None = None) -> None:
     result = _run_wp(["plugin", "activate", slug], site_path, run_as=run_as)
     if result.returncode != 0:

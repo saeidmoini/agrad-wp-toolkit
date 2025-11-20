@@ -10,7 +10,7 @@ It consolidates the previous shell scripts (download, rename, update, clean, mig
 - Automatically downloads free plugins from WordPress.org and custom premium ZIPs from `config/zip_links.txt`, keeping only the latest versions.
 - Automatically normalises ZIP filenames during updates/installs and maintains `zips/zip_folders.json`.
 - Remove a specific plugin everywhere (plugin is deactivated first), clean malicious `.htaccess` files, migrate domains, manage wp-config flags (cron, HTTP block, auto updates, file mods).
-- Install and/or activate a plugin across all sites, ensuring it is updated and enabled.
+- Install and/or activate plugins (single, multi-select, or entire catalog) or install catalog themes across all sites, ensuring plugins are enabled after install.
 - Ensure cron jobs exist whenever `DISABLE_WP_CRON` is enabled (detects PHP version from `/home/<user>/.php-version`).
 - Collects a cross-site plugin inventory in JSON format (records the first site where each plugin is found).
 - Audit a single WordPress site to see which plugins/themes/core builds report updates and match them against the ZIP catalog.
@@ -40,7 +40,7 @@ python3 -m agrad_wp_toolkit --action install-plugin
 ```
 
 ### Available actions
-`update`, `remove-plugin`, `clean-htaccess`, `migrate-domain`, `wp-config`, `download-free`, `download-links`, `inventory`, `install-plugin`, `audit-zips`
+`update`, `remove-plugin`, `clean-htaccess`, `migrate-domain`, `wp-config`, `download-free`, `download-links`, `inventory`, `install-plugin` (plugins/themes), `audit-zips`
 
 ### Configuration files
 - `catalog.json`: master catalog of all plugins/themes/core entries; edit this file to add/remove items or tweak force flags.
