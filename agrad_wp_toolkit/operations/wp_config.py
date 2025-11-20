@@ -32,17 +32,19 @@ class WPConfigManager:
 
     def set_constant(self, name: str, value: str) -> None:
         content = self.read()
-        pattern = re.compile(rf"define\(\s*['\"]{re.escape(name)}['\"],\s*.+?\);")
-        replacement = f"define('{name}', {value});"
+        pattern = re.compile(
+            rf"^\s*define\(\s*['\"]{re.escape(name)}['\"],\s*.+?\);\s*$",
+            re.MULTILINE,
+        )
+        replacement = f"define('{name}', {value});\n"
         if pattern.search(content):
             content = pattern.sub(replacement, content)
         else:
             anchor = "/* That's all, stop editing! Happy publishing. */"
-            insertion = f"{replacement}\n"
             if anchor in content:
-                content = content.replace(anchor, insertion + anchor)
+                content = content.replace(anchor, replacement + anchor)
             else:
-                content += "\n" + insertion
+                content += ("\n" if not content.endswith("\n") else "") + replacement
         self.write(content)
         logger.debug("Updated %s in %s", name, self.path)
 
@@ -142,10 +144,10 @@ def _handle_http_block(sites: list[directadmin.Site]) -> None:
     for host in data["hosts"]:
         print(f" - {host}")
     if prompts.ask_yes_no("Would you like to edit the list?", default=False):
-        hosts = input("Enter comma-separated host patterns: ").split(",")
-        hosts = [host.strip() for host in hosts if host.strip()]
-        config_loader.save_accessible_hosts(hosts)
-        data["hosts"] = hosts
+        hosts = _collect_host_inputs(data["hosts"])
+        if hosts:
+            config_loader.save_accessible_hosts(hosts)
+            data["hosts"] = hosts
     enable = prompts.ask_yes_no("Enable WP_HTTP_BLOCK_EXTERNAL?", default=True)
     joined_hosts = ",".join(data["hosts"])
     for site in sites:
@@ -178,3 +180,14 @@ def _handle_file_mods(sites: list[directadmin.Site]) -> None:
             manager.set_constant(FILE_MODS_CONSTANT, "true")
         else:
             manager.remove_constant(FILE_MODS_CONSTANT)
+
+
+def _collect_host_inputs(current_hosts: list[str]) -> list[str]:
+    print("Enter host patterns (one per line or comma-separated). Leave empty to keep the current list.")
+    entries: list[str] = []
+    while True:
+        line = input("Host (blank to finish): ").strip()
+        if not line:
+            break
+        entries.extend(part.strip() for part in line.split(",") if part.strip())
+    return entries if entries else current_hosts
