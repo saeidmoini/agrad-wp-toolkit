@@ -36,15 +36,18 @@ class WPConfigManager:
             rf"^\s*define\(\s*['\"]{re.escape(name)}['\"],\s*.+?\);\s*$",
             re.MULTILINE,
         )
-        replacement = f"define('{name}', {value});\n"
+        line = f"define('{name}', {value});"
+        replacement = f"\n{line}\n"
         if pattern.search(content):
-            content = pattern.sub(replacement, content)
+            content = pattern.sub(f"{line}\n", content)
         else:
             anchor = "/* That's all, stop editing! Happy publishing. */"
             if anchor in content:
-                content = content.replace(anchor, replacement + anchor)
+                content = content.replace(anchor, f"{replacement}{anchor}")
             else:
-                content += ("\n" if not content.endswith("\n") else "") + replacement
+                if not content.endswith("\n"):
+                    content += "\n"
+                content += f"{line}\n"
         self.write(content)
         logger.debug("Updated %s in %s", name, self.path)
 
