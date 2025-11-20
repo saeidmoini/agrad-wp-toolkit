@@ -10,7 +10,6 @@ from typing import Dict, List, Tuple
 
 from .. import paths
 from ..zip_repository import ZIP_PATTERN
-from . import zips as zip_ops
 
 logger = logging.getLogger(__name__)
 LINKS_FILE = paths.CONFIG_DIR / "zip_links.txt"
@@ -28,8 +27,6 @@ def run_link_downloader() -> None:
     paths.ZIPS_DIR.mkdir(exist_ok=True)
     for url in links:
         _download_url(url, paths.ZIPS_DIR)
-    zip_ops.run_zip_normalization()
-    prune_old_zip_versions()
     logger.info("Finished downloading custom ZIPs.")
 
 

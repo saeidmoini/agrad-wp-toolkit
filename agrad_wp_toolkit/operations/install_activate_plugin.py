@@ -6,6 +6,7 @@ from pathlib import Path
 
 from .. import config_loader, directadmin, prompts, wp_cli, zip_repository
 from . import zips
+from . import download_links
 
 logger = logging.getLogger(__name__)
 
@@ -53,6 +54,7 @@ def run_install_activate_plugin() -> None:
         return
 
     zips.run_zip_normalization()
+    download_links.prune_old_zip_versions()
     repo = zip_repository.ZipRepository()
     for site in sites:
         try:
