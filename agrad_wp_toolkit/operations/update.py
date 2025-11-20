@@ -2,7 +2,9 @@
 from __future__ import annotations
 
 import logging
+import shlex
 import shutil
+import subprocess
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional
 
@@ -155,6 +157,7 @@ def _normalize_version(version: str) -> str:
     return version.strip().lower().lstrip("v")
 
 
+
 def _update_wordpress_core(
     site_path: Path,
     item: config_loader.UpdateItem,
@@ -162,36 +165,86 @@ def _update_wordpress_core(
     run_as: str,
     zip_repo: zip_repository.ZipRepository,
 ) -> None:
-    if not item.force and installed_version:
+    artifact = zip_repo.get(item.name) if item.source == "zip" else None
+    target_version = artifact.version if artifact and artifact.version else None
+
+    if (
+        not item.force
+        and installed_version
+        and target_version
+        and not _version_changed(target_version, installed_version)
+    ):
         logger.info("Skipping WordPress core (already at %s)", installed_version)
         return
+
     logger.info("Reinstalling WordPress core at %s", site_path)
     _clean_core_directories(site_path)
-    artifact = zip_repo.get(item.name) if item.source == "zip" else None
-    version_hint = artifact.version if artifact and artifact.version else None
-    if version_hint:
-        wp_cli.core_download(site_path, run_as=run_as, version=version_hint)
+
+    if artifact:
+        staged = zip_staging.stage_for_user(artifact.path, run_as)
+        try:
+            _extract_wordpress_zip(site_path, staged, run_as)
+        finally:
+            zip_staging.cleanup_staged(staged)
     else:
-        wp_cli.core_download(site_path, run_as=run_as)
+        wp_cli.core_download(site_path, run_as=run_as, version=target_version)
+
     wp_cli.update_from_repo(site_path, "wordpress", "core", force=True, run_as=run_as)
 
 
 CORE_DIRS = ["wp-admin", "wp-includes"]
 CORE_FILES = [
-    'index.php', 'wp-activate.php', 'wp-blog-header.php', 'wp-comments-post.php',
-    'wp-config-sample.php', 'wp-cron.php', 'wp-links-opml.php', 'wp-load.php',
-    'wp-login.php', 'wp-mail.php', 'wp-settings.php', 'wp-signup.php',
-    'wp-trackback.php', 'xmlrpc.php', 'readme.html', 'license.txt'
+    "index.php",
+    "wp-activate.php",
+    "wp-blog-header.php",
+    "wp-comments-post.php",
+    "wp-config-sample.php",
+    "wp-cron.php",
+    "wp-links-opml.php",
+    "wp-load.php",
+    "wp-login.php",
+    "wp-mail.php",
+    "wp-settings.php",
+    "wp-signup.php",
+    "wp-trackback.php",
+    "xmlrpc.php",
+    "readme.html",
+    "license.txt",
 ]
 
 
 def _clean_core_directories(site_path: Path) -> None:
     for rel in CORE_DIRS:
-        target = site_path / rel
-        if target.exists():
-            shutil.rmtree(target, ignore_errors=True)
+        shutil.rmtree(site_path / rel, ignore_errors=True)
     for filename in CORE_FILES:
         target = site_path / filename
-        if target.exists():
+        try:
             target.unlink()
+        except FileNotFoundError:
+            pass
 
+
+def _extract_wordpress_zip(site_path: Path, zip_path: Path, run_as: str) -> None:
+    zip_arg = shlex.quote(str(zip_path))
+    dest_arg = shlex.quote(str(site_path))
+    dirs = " ".join(shlex.quote(name) for name in CORE_DIRS)
+    files = " ".join(shlex.quote(name) for name in CORE_FILES)
+    script_parts = [
+        'tmp=$(mktemp -d) || exit 1',
+        f'unzip -oq {zip_arg} -d "$tmp" || exit 1',
+        'src=$(find "$tmp" -mindepth 1 -maxdepth 1 -type d | head -n 1)',
+        '[ -n "$src" ] || exit 1',
+        'cd "$src" || exit 1',
+        f'for dir in {dirs}; do if [ -d "$dir" ]; then cp -a "$dir" {dest_arg}/; fi; done',
+        f'for file in {files}; do if [ -f "$file" ]; then cp -a "$file" {dest_arg}/$file; fi; done',
+        'rm -rf "$tmp"',
+    ]
+    script = '; '.join(script_parts)
+    result = subprocess.run(
+        ["sudo", "-u", run_as, "/bin/bash", "-c", script],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        raise RuntimeError(f"Failed to extract WordPress ZIP: {result.stderr.strip()}")
