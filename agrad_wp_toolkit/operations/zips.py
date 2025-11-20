@@ -29,7 +29,11 @@ def run_zip_normalization() -> None:
             logger.info("Renaming %s -> %s", entry.name, new_name)
             entry.rename(target)
             entry = target
-        manifest.append({"zip": entry.name, "folder": folder})
+        manifest.append({
+            "zip": entry.name,
+            "folder": folder,
+            "version": version,
+        })
     manifest_path = paths.ZIPS_DIR / "zip_folders.json"
     with manifest_path.open("w", encoding="utf-8") as fh:
         json.dump({"archives": manifest}, fh, indent=2)

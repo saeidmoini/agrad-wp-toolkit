@@ -58,6 +58,13 @@ def list_plugins(site_path: Path) -> Dict[str, Any]:
     return json.loads(result.stdout)
 
 
+def list_themes(site_path: Path) -> Dict[str, Any]:
+    result = _run_wp(["theme", "list", "--format=json"], site_path)
+    if result.returncode != 0:
+        raise WPCLIError(result.stderr.strip())
+    return json.loads(result.stdout)
+
+
 def plugin_is_installed(site_path: Path, slug: str) -> bool:
     result = _run_wp(["plugin", "is-installed", slug], site_path)
     return result.returncode == 0
@@ -67,3 +74,10 @@ def activate_plugin(site_path: Path, slug: str) -> None:
     result = _run_wp(["plugin", "activate", slug], site_path)
     if result.returncode != 0:
         raise WPCLIError(result.stderr.strip())
+
+
+def core_version(site_path: Path) -> str:
+    result = _run_wp(["core", "version"], site_path)
+    if result.returncode != 0:
+        raise WPCLIError(result.stderr.strip())
+    return result.stdout.strip()

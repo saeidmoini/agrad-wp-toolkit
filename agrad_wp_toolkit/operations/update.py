@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import Iterable, List
+from typing import Dict, Iterable, List, Optional
 
 from .. import config_loader, directadmin, paths, prompts, wp_cli, zip_repository
 from . import zips
@@ -49,9 +49,10 @@ def run_interactive_update() -> None:
     free_slugs = {slug.lower() for slug in config_loader.load_free_plugin_slugs()}
     for site in sites:
         logger.info("Processing %s (%s)", site.domain, site.path)
+        installed_versions = _collect_installed_versions(site.path)
         for item in payload:
             try:
-                _update_item(site.path, item, zip_repo, free_slugs)
+                _update_item(site.path, item, zip_repo, free_slugs, installed_versions)
             except Exception as exc:  # pylint: disable=broad-except
                 logger.error("Failed to update %s on %s: %s", item.name, site.domain, exc)
 
@@ -61,12 +62,21 @@ def _update_item(
     item: config_loader.UpdateItem,
     zip_repo: zip_repository.ZipRepository,
     free_slugs: Iterable[str],
+    installed_versions: Dict[str, Dict[str, Optional[str]]],
 ) -> None:
     kind = _map_kind(item.type)
+    installed_version = _lookup_installed_version(kind, item.name, installed_versions)
+    if kind in {"plugin", "theme"} and installed_version is None:
+        logger.info("Skipping %s on %s (not installed)", item.name, site_path)
+        return
     if item.source == "zip":
         artifact = zip_repo.get(item.name)
         if not artifact:
             raise RuntimeError(f"No ZIP found for {item.name} inside {paths.ZIPS_DIR}")
+        if not item.force and installed_version and artifact.version:
+            if not _version_changed(artifact.version, installed_version):
+                logger.info("Skipping %s on %s (already at version %s)", item.name, site_path, installed_version)
+                return
         wp_cli.install_from_zip(site_path, artifact.path, kind, force=True)
         return
     if item.name.lower() in free_slugs or item.source == "wp.org":
@@ -82,3 +92,47 @@ def _map_kind(item_type: str) -> str:
         return "core"
     return "plugin"
 
+
+def _collect_installed_versions(site_path: Path) -> Dict[str, Dict[str, Optional[str]]]:
+    data: Dict[str, Dict[str, Optional[str]]] = {
+        "plugins": {},
+        "themes": {},
+        "core": {"wordpress": None},
+    }
+    try:
+        for entry in wp_cli.list_plugins(site_path):
+            data["plugins"][entry["name"].lower()] = entry.get("version")
+    except Exception as exc:  # pylint: disable=broad-except
+        logger.warning("Could not list plugins for %s: %s", site_path, exc)
+    try:
+        for entry in wp_cli.list_themes(site_path):
+            data["themes"][entry["name"].lower()] = entry.get("version")
+    except Exception as exc:  # pylint: disable=broad-except
+        logger.warning("Could not list themes for %s: %s", site_path, exc)
+    try:
+        data["core"]["wordpress"] = wp_cli.core_version(site_path)
+    except Exception as exc:  # pylint: disable=broad-except
+        logger.warning("Could not determine WordPress version for %s: %s", site_path, exc)
+    return data
+
+
+def _lookup_installed_version(
+    kind: str,
+    slug: str,
+    installed_versions: Dict[str, Dict[str, Optional[str]]],
+) -> Optional[str]:
+    if kind == "plugin":
+        return installed_versions["plugins"].get(slug.lower())
+    if kind == "theme":
+        return installed_versions["themes"].get(slug.lower())
+    if kind == "core":
+        return installed_versions["core"].get("wordpress")
+    return None
+
+
+def _version_changed(zip_version: str, installed_version: str) -> bool:
+    return _normalize_version(zip_version) != _normalize_version(installed_version)
+
+
+def _normalize_version(version: str) -> str:
+    return version.strip().lower().lstrip("v")
