@@ -33,6 +33,14 @@ def run_remove_plugin() -> None:
 
 
 def _remove_plugin_from_site(site_path: Path, slug: str) -> None:
+    deactivate = wp_cli._run_wp(["plugin", "deactivate", slug], site_path)  # type: ignore[attr-defined]
+    if deactivate.returncode != 0:
+        logger.warning(
+            "Could not deactivate %s at %s: %s",
+            slug,
+            site_path,
+            deactivate.stderr.strip(),
+        )
     result = wp_cli._run_wp(["plugin", "delete", slug], site_path)  # type: ignore[attr-defined]
     if result.returncode != 0:
         raise RuntimeError(result.stderr.strip())
