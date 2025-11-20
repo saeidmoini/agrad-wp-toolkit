@@ -5,7 +5,7 @@ import json
 import logging
 import subprocess
 from pathlib import Path
-from typing import Any, Dict, Sequence
+from typing import Any, Dict, List, Sequence
 
 logger = logging.getLogger(__name__)
 
@@ -53,15 +53,29 @@ def update_from_repo(site_path: Path, slug: str, kind: str, force: bool = False,
     logger.info("Updated %s %s at %s", kind, slug, site_path)
 
 
-def list_plugins(site_path: Path, run_as: str | None = None) -> Dict[str, Any]:
-    result = _run_wp(["plugin", "list", "--format=json"], site_path, run_as=run_as)
+def list_plugins(
+    site_path: Path,
+    run_as: str | None = None,
+    fields: Sequence[str] | None = None,
+) -> List[Dict[str, Any]]:
+    args = ["plugin", "list", "--format=json"]
+    if fields:
+        args.append("--fields=" + ",".join(fields))
+    result = _run_wp(args, site_path, run_as=run_as)
     if result.returncode != 0:
         raise WPCLIError(result.stderr.strip())
     return json.loads(result.stdout)
 
 
-def list_themes(site_path: Path, run_as: str | None = None) -> Dict[str, Any]:
-    result = _run_wp(["theme", "list", "--format=json"], site_path, run_as=run_as)
+def list_themes(
+    site_path: Path,
+    run_as: str | None = None,
+    fields: Sequence[str] | None = None,
+) -> List[Dict[str, Any]]:
+    args = ["theme", "list", "--format=json"]
+    if fields:
+        args.append("--fields=" + ",".join(fields))
+    result = _run_wp(args, site_path, run_as=run_as)
     if result.returncode != 0:
         raise WPCLIError(result.stderr.strip())
     return json.loads(result.stdout)
@@ -93,3 +107,22 @@ def core_download(site_path: Path, run_as: str | None = None, version: str | Non
     if result.returncode != 0:
         raise WPCLIError(result.stderr.strip())
     logger.info("Downloaded WordPress core into %s", site_path)
+
+
+def core_check_updates(site_path: Path, run_as: str | None = None) -> List[Dict[str, Any]]:
+    result = _run_wp(["core", "check-update", "--format=json"], site_path, run_as=run_as)
+    if result.returncode != 0:
+        raise WPCLIError(result.stderr.strip())
+    payload = result.stdout.strip()
+    if not payload:
+        return []
+    try:
+        data = json.loads(payload)
+    except json.JSONDecodeError:
+        logger.debug("Unexpected core check output (non-JSON): %s", payload)
+        return []
+    if isinstance(data, dict):
+        return [data]
+    if isinstance(data, list):
+        return data
+    return []

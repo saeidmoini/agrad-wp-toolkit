@@ -13,6 +13,7 @@ It consolidates the previous shell scripts (download, rename, update, clean, mig
 - Install and/or activate a plugin across all sites, ensuring it is updated and enabled.
 - Ensure cron jobs exist whenever `DISABLE_WP_CRON` is enabled (detects PHP version from `/home/<user>/.php-version`).
 - Collects a cross-site plugin inventory in JSON format (records the first site where each plugin is found).
+- Audit a single WordPress site to see which plugins/themes/core builds report updates and match them against the ZIP catalog.
 - Structured logging to `logs/agrad_wp.log` plus console output.
 - Test suite (`pytest`) covering the config loader, wp-config editor, DirectAdmin discovery, and ZIP repository logic.
 
@@ -39,7 +40,7 @@ python3 -m agrad_wp_toolkit --action install-plugin
 ```
 
 ### Available actions
-`update`, `remove-plugin`, `clean-htaccess`, `migrate-domain`, `wp-config`, `download-free`, `download-links`, `inventory`, `install-plugin`
+`update`, `remove-plugin`, `clean-htaccess`, `migrate-domain`, `wp-config`, `download-free`, `download-links`, `inventory`, `install-plugin`, `audit-zips`
 
 ### Configuration files
 - `catalog.json`: master catalog of all plugins/themes/core entries; edit this file to add/remove items or tweak force flags.

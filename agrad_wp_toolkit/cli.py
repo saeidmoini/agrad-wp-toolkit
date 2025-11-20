@@ -14,6 +14,7 @@ from .operations import (
     remove_htaccess,
     remove_plugin,
     update,
+    update_audit,
     wp_config,
 )
 
@@ -32,6 +33,10 @@ ACTIONS = {
     "download-links": (
         "Download custom ZIPs from link list",
         download_links.run_link_downloader,
+    ),
+    "audit-zips": (
+        "Check a site's update list to see which ZIPs are outdated",
+        update_audit.run_update_audit,
     ),
 }
 
