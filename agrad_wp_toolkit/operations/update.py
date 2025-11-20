@@ -6,6 +6,8 @@ from pathlib import Path
 from typing import Dict, Iterable, List, Optional
 
 from .. import config_loader, directadmin, paths, prompts, wp_cli, zip_repository
+from .. import zip_staging
+from .. import zip_staging
 from . import zips
 from . import download_links
 
@@ -79,7 +81,11 @@ def _update_item(
         ):
             logger.info("Skipping %s on %s (already at version %s)", item.name, site_path, installed_version)
             return
-        wp_cli.install_from_zip(site_path, artifact.path, kind, force=True, run_as=run_as)
+        staged = zip_staging.stage_for_user(artifact.path, run_as)
+        try:
+            wp_cli.install_from_zip(site_path, staged, kind, force=True, run_as=run_as)
+        finally:
+            zip_staging.cleanup_staged(staged)
         return
     if item.name.lower() in free_slugs or item.source == "wp.org":
         wp_cli.update_from_repo(site_path, item.name, kind, force=item.force, run_as=run_as)

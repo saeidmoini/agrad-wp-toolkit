@@ -4,7 +4,7 @@ from __future__ import annotations
 import logging
 from pathlib import Path
 
-from .. import config_loader, directadmin, prompts, wp_cli, zip_repository
+from .. import config_loader, directadmin, prompts, wp_cli, zip_repository, zip_staging
 from . import zips
 from . import download_links
 
@@ -88,20 +88,26 @@ def _install_plugin(
     repo: zip_repository.ZipRepository,
     run_as: str,
 ) -> None:
+    staged = None
     if source == "zip":
         artifact = repo.get(slug)
         if not artifact:
             raise RuntimeError(
                 f"No ZIP found for {slug}. Place {slug}.zip or {slug}_v*.zip inside zips/."
             )
-        args = ["plugin", "install", str(artifact.path)]
+        staged = zip_staging.stage_for_user(artifact.path, run_as)
+        args = ["plugin", "install", str(staged)]
     else:
         args = ["plugin", "install", slug]
     if force:
         args.append("--force")
     result = wp_cli._run_wp(args, site_path, run_as=run_as)  # type: ignore[attr-defined]
     if result.returncode != 0:
+        if staged:
+            zip_staging.cleanup_staged(staged)
         raise RuntimeError(result.stderr.strip())
+    if staged:
+        zip_staging.cleanup_staged(staged)
 
 
 def _update_plugin(
@@ -112,17 +118,23 @@ def _update_plugin(
     repo: zip_repository.ZipRepository,
     run_as: str,
 ) -> None:
+    staged = None
     if source == "zip":
         artifact = repo.get(slug)
         if not artifact:
             raise RuntimeError(
                 f"No ZIP found for {slug}. Place {slug}.zip or {slug}_v*.zip inside zips/."
             )
-        args = ["plugin", "install", str(artifact.path), "--force"]
+        staged = zip_staging.stage_for_user(artifact.path, run_as)
+        args = ["plugin", "install", str(staged), "--force"]
     else:
         args = ["plugin", "update", slug]
         if force:
             args.append("--force")
     result = wp_cli._run_wp(args, site_path, run_as=run_as)  # type: ignore[attr-defined]
     if result.returncode != 0:
+        if staged:
+            zip_staging.cleanup_staged(staged)
         raise RuntimeError(result.stderr.strip())
+    if staged:
+        zip_staging.cleanup_staged(staged)
