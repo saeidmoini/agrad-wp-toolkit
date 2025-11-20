@@ -9,10 +9,10 @@ It consolidates the previous shell scripts (download, rename, update, clean, mig
 - Force reinstall regardless of current version, while respecting per-item force flags defined in `catalog.json`.
 - Automatically downloads free plugins from WordPress.org and custom premium ZIPs from `config/zip_links.txt`, keeping only the latest versions.
 - Automatically normalises ZIP filenames during updates/installs and maintains `zips/zip_folders.json`.
-- Remove a specific plugin everywhere, clean malicious `.htaccess` files, migrate domains, manage wp-config flags (cron, HTTP block, auto updates, file mods).
+- Remove a specific plugin everywhere (plugin is deactivated first), clean malicious `.htaccess` files, migrate domains, manage wp-config flags (cron, HTTP block, auto updates, file mods).
 - Install and/or activate a plugin across all sites, ensuring it is updated and enabled.
 - Ensure cron jobs exist whenever `DISABLE_WP_CRON` is enabled (detects PHP version from `/home/<user>/.php-version`).
-- Collects a cross-site plugin inventory in JSON format.
+- Collects a cross-site plugin inventory in JSON format (records the first site where each plugin is found).
 - Structured logging to `logs/agrad_wp.log` plus console output.
 - Test suite (`pytest`) covering the config loader, wp-config editor, DirectAdmin discovery, and ZIP repository logic.
 
@@ -34,6 +34,8 @@ To skip the menu and launch a single action:
 ```bash
 python3 -m agrad_wp_toolkit --action update
 python3 -m agrad_wp_toolkit --action download-free
+python3 -m agrad_wp_toolkit --action inventory
+python3 -m agrad_wp_toolkit --action install-plugin
 ```
 
 ### Available actions
@@ -46,8 +48,8 @@ python3 -m agrad_wp_toolkit --action download-free
 - `config/zip_links.txt`: list of premium ZIP URLs consumed by the “Download custom ZIPs” action.
 
 ### ZIP management
-- Store custom update ZIPs inside the `zips/` folder named like `<slug>_v<version>.zip`.
-- Update and install actions automatically normalize ZIP names (and prune duplicates) before running.
+- Store custom update ZIPs inside the `zips/` folder named like `<slug>_v<version>.zip` (WordPress core ZIPs follow the same naming so version comparisons work).
+- Update and install actions automatically normalize ZIP names (and prune duplicates) before running; ZIPs are staged into `/tmp/agrad-wp-toolkit/<user>` so wp-cli runs as the target DirectAdmin user and files retain the proper ownership.
 - Free plugins are downloaded with the “Download free plugins” action (or `download_files.sh` wrapper).
 - Premium ZIPs are pulled via the “Download custom ZIPs from link list” action, which reads `config/zip_links.txt`, saves them under `zips/`, normalizes names, and removes older versions automatically.
 
