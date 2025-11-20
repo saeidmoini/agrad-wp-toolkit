@@ -67,7 +67,7 @@ def _update_item(
         artifact = zip_repo.get(item.name)
         if not artifact:
             raise RuntimeError(f"No ZIP found for {item.name} inside {paths.ZIPS_DIR}")
-        wp_cli.install_from_zip(site_path, artifact.path, kind, force=item.force)
+        wp_cli.install_from_zip(site_path, artifact.path, kind, force=True)
         return
     if item.name.lower() in free_slugs or item.source == "wp.org":
         wp_cli.update_from_repo(site_path, item.name, kind, force=item.force)
@@ -81,5 +81,4 @@ def _map_kind(item_type: str) -> str:
     if item_type == "wordpress":
         return "core"
     return "plugin"
-
 
