@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Dict, Set
+from typing import Dict
 
 from .. import config_loader, directadmin, paths, wp_cli
 
@@ -16,15 +16,20 @@ def run_inventory() -> None:
         return
     if not wp_cli.ensure_wp_cli():
         return
-    inventory: Set[str] = set()
+    inventory: Dict[str, str] = {}
     for site in sites:
         logger.info("Listing plugins for %s", site.domain)
         try:
             result = wp_cli.list_plugins(site.path, run_as=site.user)
             for entry in result:
-                inventory.add(entry["name"])
+                name = entry["name"]
+                inventory.setdefault(name, site.domain)
         except Exception as exc:  # pylint: disable=broad-except
             logger.error("Failed to list plugins for %s: %s", site.domain, exc)
-    payload: Dict[str, list[dict]] = {"plugins": [{"name": name} for name in sorted(inventory)]}
+    payload: Dict[str, list[dict]] = {
+        "plugins": [
+            {"name": name, "first_site": inventory[name]} for name in sorted(inventory)
+        ]
+    }
     config_loader.write_json(paths.PLUGIN_INVENTORY_PATH, payload)
     logger.info("Plugin inventory saved to %s", paths.PLUGIN_INVENTORY_PATH)
