@@ -5,6 +5,7 @@ import logging
 from pathlib import Path
 
 from .. import config_loader, directadmin, prompts, wp_cli, zip_repository
+from . import zips
 
 logger = logging.getLogger(__name__)
 
@@ -26,6 +27,8 @@ def run_install_activate_plugin() -> None:
             default=selected_item.force,
         )
     else:
+        print("Enter the plugin slug (matches folder name inside wp-content/plugins).")
+        print("If you have a custom ZIP, place it in the zips/ folder as <slug>_v<version>.zip before running this action.")
         slug = input("Enter plugin slug: ").strip()
         if not slug:
             logger.error("Plugin slug is required.")
@@ -49,6 +52,7 @@ def run_install_activate_plugin() -> None:
         logger.warning("No WordPress sites found for the selected scope.")
         return
 
+    zips.run_zip_normalization()
     repo = zip_repository.ZipRepository()
     for site in sites:
         try:

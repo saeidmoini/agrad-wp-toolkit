@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Iterable, List
 
 from .. import config_loader, directadmin, paths, prompts, wp_cli, zip_repository
+from . import zips
 
 logger = logging.getLogger(__name__)
 
@@ -32,6 +33,7 @@ def run_interactive_update() -> None:
             return
 
     force_run = prompts.ask_yes_no("Force reinstall even if up-to-date?", default=False)
+    zips.run_zip_normalization()
     payload = catalog.to_update_payload(selection, force_run)
     zip_repo = zip_repository.ZipRepository()
 

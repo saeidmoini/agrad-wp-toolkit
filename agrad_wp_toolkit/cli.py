@@ -15,7 +15,6 @@ from .operations import (
     remove_plugin,
     update,
     wp_config,
-    zips,
 )
 
 ACTIONS = {
@@ -25,7 +24,6 @@ ACTIONS = {
     "migrate-domain": ("Migrate domain", domain_migrate.run_domain_migration),
     "wp-config": ("Manage wp-config flags", wp_config.run_wp_config_menu),
     "download-free": ("Download free plugins", free_downloads.run_free_downloads),
-    "normalize-zips": ("Normalize ZIP files", zips.run_zip_normalization),
     "inventory": ("Collect plugin inventory", inventory.run_inventory),
     "install-plugin": (
         "Install/activate a plugin everywhere",
