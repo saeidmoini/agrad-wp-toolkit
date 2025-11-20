@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import logging
+import shutil
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional
 
@@ -29,7 +30,10 @@ def run_interactive_update() -> None:
     if include_all:
         selection = catalog.get_names()
     else:
-        selection = prompts.ask_multi_select("Select items to update", catalog.get_names())
+        display = [f"[{item.type}] {item.name}" for item in catalog.items]
+        chosen = prompts.ask_multi_select("Select items to update", display)
+        mapping = {label: item.name for label, item in zip(display, catalog.items)}
+        selection = [mapping[label] for label in chosen]
         if not selection:
             logger.info("No items selected. Nothing to do.")
             return
@@ -68,8 +72,11 @@ def _update_item(
 ) -> None:
     kind = _map_kind(item.type)
     installed_version = _lookup_installed_version(kind, item.name, installed_versions)
+    if kind in {"plugin", "theme"} and installed_version is None:
+        logger.info("Skipping %s on %s (not installed)", item.name, site_path)
+        return
     if kind == "core":
-        _update_wordpress_core(site_path, item, installed_version, run_as)
+        _update_wordpress_core(site_path, item, installed_version, run_as, zip_repo)
         return
     if item.source == "zip":
         artifact = zip_repo.get(item.name)
@@ -153,9 +160,38 @@ def _update_wordpress_core(
     item: config_loader.UpdateItem,
     installed_version: Optional[str],
     run_as: str,
+    zip_repo: zip_repository.ZipRepository,
 ) -> None:
     if not item.force and installed_version:
         logger.info("Skipping WordPress core (already at %s)", installed_version)
         return
-    logger.info("Running wp core update on %s", site_path)
+    logger.info("Reinstalling WordPress core at %s", site_path)
+    _clean_core_directories(site_path)
+    artifact = zip_repo.get(item.name) if item.source == "zip" else None
+    version_hint = artifact.version if artifact and artifact.version else None
+    if version_hint:
+        wp_cli.core_download(site_path, run_as=run_as, version=version_hint)
+    else:
+        wp_cli.core_download(site_path, run_as=run_as)
     wp_cli.update_from_repo(site_path, "wordpress", "core", force=True, run_as=run_as)
+
+
+CORE_DIRS = ["wp-admin", "wp-includes"]
+CORE_FILES = [
+    'index.php', 'wp-activate.php', 'wp-blog-header.php', 'wp-comments-post.php',
+    'wp-config-sample.php', 'wp-cron.php', 'wp-links-opml.php', 'wp-load.php',
+    'wp-login.php', 'wp-mail.php', 'wp-settings.php', 'wp-signup.php',
+    'wp-trackback.php', 'xmlrpc.php', 'readme.html', 'license.txt'
+]
+
+
+def _clean_core_directories(site_path: Path) -> None:
+    for rel in CORE_DIRS:
+        target = site_path / rel
+        if target.exists():
+            shutil.rmtree(target, ignore_errors=True)
+    for filename in CORE_FILES:
+        target = site_path / filename
+        if target.exists():
+            target.unlink()
+

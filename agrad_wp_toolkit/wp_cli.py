@@ -83,3 +83,13 @@ def core_version(site_path: Path, run_as: str | None = None) -> str:
     if result.returncode != 0:
         raise WPCLIError(result.stderr.strip())
     return result.stdout.strip()
+
+
+def core_download(site_path: Path, run_as: str | None = None, version: str | None = None) -> None:
+    args = ["core", "download", "--skip-content", "--force"]
+    if version:
+        args.extend(["--version", version])
+    result = _run_wp(args, site_path, run_as=run_as)
+    if result.returncode != 0:
+        raise WPCLIError(result.stderr.strip())
+    logger.info("Downloaded WordPress core into %s", site_path)
