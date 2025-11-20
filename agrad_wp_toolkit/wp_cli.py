@@ -15,7 +15,7 @@ class WPCLIError(RuntimeError):
 
 
 def _run_wp(args: Sequence[str], site_path: Path) -> subprocess.CompletedProcess:
-    cmd = ["wp", "--path", str(site_path), "--allow-root", *args]
+    cmd = ["wp", f"--path={site_path}", "--allow-root", *args]
     logger.debug("Running wp command: %s", " ".join(cmd))
     return subprocess.run(cmd, capture_output=True, text=True, check=False)
 
