@@ -27,13 +27,15 @@ def run_remove_plugin() -> None:
         return
     for site in sites:
         try:
-            _remove_plugin_from_site(site.path, plugin_slug)
+            _remove_plugin_from_site(site, plugin_slug)
         except Exception as exc:  # pylint: disable=broad-except
             logger.error("Failed to remove %s from %s: %s", plugin_slug, site.domain, exc)
 
 
-def _remove_plugin_from_site(site_path: Path, slug: str) -> None:
-    deactivate = wp_cli._run_wp(["plugin", "deactivate", slug], site_path)  # type: ignore[attr-defined]
+def _remove_plugin_from_site(site: directadmin.Site, slug: str) -> None:
+    site_path = site.path
+    run_as = site.user
+    deactivate = wp_cli._run_wp(["plugin", "deactivate", slug], site_path, run_as=run_as)  # type: ignore[attr-defined]
     if deactivate.returncode != 0:
         logger.warning(
             "Could not deactivate %s at %s: %s",
@@ -41,7 +43,7 @@ def _remove_plugin_from_site(site_path: Path, slug: str) -> None:
             site_path,
             deactivate.stderr.strip(),
         )
-    result = wp_cli._run_wp(["plugin", "delete", slug], site_path)  # type: ignore[attr-defined]
+    result = wp_cli._run_wp(["plugin", "delete", slug], site_path, run_as=run_as)  # type: ignore[attr-defined]
     if result.returncode != 0:
         raise RuntimeError(result.stderr.strip())
     logger.info("Removed %s from %s", slug, site_path)

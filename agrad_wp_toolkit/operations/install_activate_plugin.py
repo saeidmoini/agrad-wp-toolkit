@@ -58,24 +58,26 @@ def run_install_activate_plugin() -> None:
     repo = zip_repository.ZipRepository()
     for site in sites:
         try:
-            _ensure_plugin(site.path, slug, source, force, repo)
+            _ensure_plugin(site, slug, source, force, repo)
             logger.info("Ensured plugin %s active on %s", slug, site.domain)
         except Exception as exc:  # pylint: disable=broad-except
             logger.error("Failed to ensure %s on %s: %s", slug, site.domain, exc)
 
 
 def _ensure_plugin(
-    site_path: Path,
+    site: directadmin.Site,
     slug: str,
     source: str,
     force: bool,
     repo: zip_repository.ZipRepository,
 ) -> None:
-    if wp_cli.plugin_is_installed(site_path, slug):
-        _update_plugin(site_path, slug, source, force, repo)
+    site_path = site.path
+    run_as = site.user
+    if wp_cli.plugin_is_installed(site_path, slug, run_as=run_as):
+        _update_plugin(site_path, slug, source, force, repo, run_as)
     else:
-        _install_plugin(site_path, slug, source, force, repo)
-    wp_cli.activate_plugin(site_path, slug)
+        _install_plugin(site_path, slug, source, force, repo, run_as)
+    wp_cli.activate_plugin(site_path, slug, run_as=run_as)
 
 
 def _install_plugin(
@@ -84,6 +86,7 @@ def _install_plugin(
     source: str,
     force: bool,
     repo: zip_repository.ZipRepository,
+    run_as: str,
 ) -> None:
     if source == "zip":
         artifact = repo.get(slug)
@@ -96,7 +99,7 @@ def _install_plugin(
         args = ["plugin", "install", slug]
     if force:
         args.append("--force")
-    result = wp_cli._run_wp(args, site_path)  # type: ignore[attr-defined]
+    result = wp_cli._run_wp(args, site_path, run_as=run_as)  # type: ignore[attr-defined]
     if result.returncode != 0:
         raise RuntimeError(result.stderr.strip())
 
@@ -107,6 +110,7 @@ def _update_plugin(
     source: str,
     force: bool,
     repo: zip_repository.ZipRepository,
+    run_as: str,
 ) -> None:
     if source == "zip":
         artifact = repo.get(slug)
@@ -119,6 +123,6 @@ def _update_plugin(
         args = ["plugin", "update", slug]
         if force:
             args.append("--force")
-    result = wp_cli._run_wp(args, site_path)  # type: ignore[attr-defined]
+    result = wp_cli._run_wp(args, site_path, run_as=run_as)  # type: ignore[attr-defined]
     if result.returncode != 0:
         raise RuntimeError(result.stderr.strip())

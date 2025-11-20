@@ -20,7 +20,7 @@ def run_inventory() -> None:
     for site in sites:
         logger.info("Listing plugins for %s", site.domain)
         try:
-            result = wp_cli.list_plugins(site.path)
+            result = wp_cli.list_plugins(site.path, run_as=site.user)
             for entry in result:
                 inventory.add(entry["name"])
         except Exception as exc:  # pylint: disable=broad-except
