@@ -66,10 +66,14 @@ def _update_item(
     if item.source == "zip":
         artifact = zip_repo.get(item.name)
         if not artifact:
+            if _can_use_repo(item, free_slugs):
+                logger.info("Zip missing for %s; falling back to WordPress repo", item.name)
+                wp_cli.update_from_repo(site_path, item.name, kind, force=item.force)
+                return
             raise RuntimeError(f"No ZIP found for {item.name} inside {paths.ZIPS_DIR}")
         wp_cli.install_from_zip(site_path, artifact.path, kind, force=item.force)
         return
-    if item.name.lower() in free_slugs or item.source == "wp.org":
+    if _can_use_repo(item, free_slugs):
         wp_cli.update_from_repo(site_path, item.name, kind, force=item.force)
         return
     raise RuntimeError(f"Unknown source for {item.name}; set source to 'zip' or 'wp.org'")
@@ -81,3 +85,10 @@ def _map_kind(item_type: str) -> str:
     if item_type == "wordpress":
         return "core"
     return "plugin"
+
+
+
+def _can_use_repo(item: config_loader.UpdateItem, free_slugs: Iterable[str]) -> bool:
+    if item.source == "wp.org" or item.type == "wordpress":
+        return True
+    return item.name.lower() in free_slugs

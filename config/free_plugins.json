@@ -9,6 +9,7 @@
         "litespeed-cache",
         "insert-headers-and-footers",
         "redis-cache",
-        "query-monitor"
+        "query-monitor",
+        "hello-elementor"
     ]
 }
