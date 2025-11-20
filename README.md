@@ -48,6 +48,7 @@ python3 -m agrad_wp_toolkit --action download-free
 - Store custom update ZIPs inside the `zips/` folder named like `<slug>_v<version>.zip`.
 - Use the “Normalize ZIP files” action (or `rename_zips_and_build_json.sh`) to enforce that naming scheme and refresh `zips/zip_folders.json`.
 - Free plugins are downloaded with the “Download free plugins” action (or `download_files.sh` wrapper).
+- For premium ZIPs you can maintain a `zips/links.txt` list and run `zips/download.sh` to fetch everything in one go (the script accepts optional file/destination arguments).
 
 ## Tests
 
