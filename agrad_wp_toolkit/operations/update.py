@@ -7,7 +7,6 @@ from typing import Dict, Iterable, List, Optional
 
 from .. import config_loader, directadmin, paths, prompts, wp_cli, zip_repository
 from .. import zip_staging
-from .. import zip_staging
 from . import zips
 from . import download_links
 
@@ -69,6 +68,9 @@ def _update_item(
 ) -> None:
     kind = _map_kind(item.type)
     installed_version = _lookup_installed_version(kind, item.name, installed_versions)
+    if kind == "core":
+        _update_wordpress_core(site_path, item, installed_version, run_as)
+        return
     if item.source == "zip":
         artifact = zip_repo.get(item.name)
         if not artifact:
@@ -144,3 +146,16 @@ def _version_changed(zip_version: str, installed_version: str) -> bool:
 
 def _normalize_version(version: str) -> str:
     return version.strip().lower().lstrip("v")
+
+
+def _update_wordpress_core(
+    site_path: Path,
+    item: config_loader.UpdateItem,
+    installed_version: Optional[str],
+    run_as: str,
+) -> None:
+    if not item.force and installed_version:
+        logger.info("Skipping WordPress core (already at %s)", installed_version)
+        return
+    logger.info("Running wp core update on %s", site_path)
+    wp_cli.update_from_repo(site_path, "wordpress", "core", force=True, run_as=run_as)
