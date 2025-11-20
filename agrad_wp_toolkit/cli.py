@@ -7,6 +7,7 @@ import logging
 from . import logging_utils, paths, prompts
 from .operations import (
     domain_migrate,
+    download_links,
     free_downloads,
     install_activate_plugin,
     inventory,
@@ -29,6 +30,10 @@ ACTIONS = {
     "install-plugin": (
         "Install/activate a plugin everywhere",
         install_activate_plugin.run_install_activate_plugin,
+    ),
+    "download-links": (
+        "Download custom ZIPs from link list",
+        download_links.run_link_downloader,
     ),
 }
 

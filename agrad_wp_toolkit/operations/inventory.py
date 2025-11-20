@@ -18,6 +18,7 @@ def run_inventory() -> None:
         return
     inventory: Set[str] = set()
     for site in sites:
+        logger.info("Listing plugins for %s", site.domain)
         try:
             result = wp_cli.list_plugins(site.path)
             for entry in result:
