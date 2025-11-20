@@ -60,3 +60,46 @@ def test_build_findings_preserves_available_version() -> None:
     findings = update_audit.build_findings(candidates, repo)  # type: ignore[arg-type]
     assert findings[0].available_version == "6.5"
     assert findings[0].zip_missing is True
+
+
+def test_zip_status_marker_flags_missing_zip() -> None:
+    finding = update_audit.UpdateFinding(
+        kind="plugin",
+        slug="sonicctc",
+        installed_version="3.3.2",
+        available_version="4.0.0.2",
+        zip_missing=True,
+    )
+    marker, status = update_audit._zip_status_marker(finding)
+    assert marker == "[!!]"
+    assert status == "zip missing"
+
+
+def test_zip_status_marker_marks_outdated_zip_version() -> None:
+    finding = update_audit.UpdateFinding(
+        kind="plugin",
+        slug="elementor-pro",
+        installed_version="3.32.2",
+        available_version="3.33.1",
+        zip_version="3.32.2",
+        zip_name="elementor-pro_v3.32.2.zip",
+        zip_missing=False,
+    )
+    marker, status = update_audit._zip_status_marker(finding)
+    assert marker == "[!!]"
+    assert "zip outdated" in status
+
+
+def test_zip_status_marker_marks_zip_ready() -> None:
+    finding = update_audit.UpdateFinding(
+        kind="plugin",
+        slug="query-monitor",
+        installed_version="3.19.0",
+        available_version="3.20.0",
+        zip_version="3.20.0",
+        zip_name="query-monitor_v3.20.0.zip",
+        zip_missing=False,
+    )
+    marker, status = update_audit._zip_status_marker(finding)
+    assert marker == "[OK]"
+    assert status == "zip ready"

@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import List, Sequence
+from typing import List, Sequence, Tuple
 
 from .. import directadmin, prompts, wp_cli, zip_repository
 
@@ -174,7 +174,9 @@ def _log_findings(domain: str, findings: Sequence[UpdateFinding]) -> None:
             continue
         logger.info("%s update(s) reported on %s:", kind.capitalize(), domain)
         for finding in items:
+            marker, status_text = _zip_status_marker(finding)
             details: List[str] = []
+            details.append(status_text)
             if finding.installed_version:
                 details.append(f"installed={finding.installed_version}")
             if finding.available_version:
@@ -183,9 +185,31 @@ def _log_findings(domain: str, findings: Sequence[UpdateFinding]) -> None:
                 details.append(f"zip={finding.zip_name}")
             elif finding.zip_version:
                 details.append(f"zip_version={finding.zip_version}")
-            if finding.zip_missing:
+            if finding.zip_missing and "zip missing" not in details:
                 details.append("zip missing")
-            if details:
-                logger.info(" - %s (%s)", finding.slug, ", ".join(details))
+            payload = ", ".join(details) if details else ""
+            if payload:
+                logger.info(" - %s %s (%s)", marker, finding.slug, payload)
             else:
-                logger.info(" - %s", finding.slug)
+                logger.info(" - %s %s", marker, finding.slug)
+
+
+def _zip_status_marker(finding: UpdateFinding) -> Tuple[str, str]:
+    if finding.zip_missing:
+        return "[!!]", "zip missing"
+    if not finding.zip_name:
+        return "[!!]", "zip missing"
+    if not finding.zip_version:
+        return "[??]", "zip version unknown"
+    if finding.available_version:
+        available = _normalize_version(finding.available_version)
+        zipped = _normalize_version(finding.zip_version)
+        if available and zipped and available != zipped:
+            return "[!!]", f"zip outdated (have {finding.zip_version})"
+    return "[OK]", "zip ready"
+
+
+def _normalize_version(version: str | None) -> str | None:
+    if not version:
+        return None
+    return version.strip().lower().lstrip("v")
