@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Dict
+from typing import Dict, Set
 
 from .. import config_loader, directadmin, paths, wp_cli
 
@@ -10,6 +10,8 @@ logger = logging.getLogger(__name__)
 
 
 def run_inventory() -> None:
+    catalog = config_loader.Catalog.load()
+    known_plugins = _catalog_plugin_slugs(catalog)
     sites = directadmin.resolve_sites()
     if not sites:
         logger.warning("No WordPress sites discovered.")
@@ -22,7 +24,12 @@ def run_inventory() -> None:
         try:
             result = wp_cli.list_plugins(site.path, run_as=site.user)
             for entry in result:
-                name = entry["name"]
+                name = entry.get("name")
+                if not name:
+                    continue
+                slug = name.lower()
+                if slug in known_plugins:
+                    continue
                 inventory.setdefault(name, site.domain)
         except Exception as exc:  # pylint: disable=broad-except
             logger.error("Failed to list plugins for %s: %s", site.domain, exc)
@@ -33,3 +40,7 @@ def run_inventory() -> None:
     }
     config_loader.write_json(paths.PLUGIN_INVENTORY_PATH, payload)
     logger.info("Plugin inventory saved to %s", paths.PLUGIN_INVENTORY_PATH)
+
+
+def _catalog_plugin_slugs(catalog: config_loader.Catalog) -> Set[str]:
+    return {item.name.lower() for item in catalog.items if item.type == "plugins"}
