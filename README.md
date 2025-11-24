@@ -9,7 +9,7 @@ It consolidates the previous shell scripts (download, rename, update, clean, mig
 - Force reinstall regardless of current version, while respecting per-item force flags defined in `catalog.json`.
 - Automatically downloads free plugins from WordPress.org and custom premium ZIPs from `config/zip_links.txt`, keeping only the latest versions.
 - Automatically normalises ZIP filenames during updates/installs and maintains `zips/zip_folders.json`.
-- Remove a specific plugin everywhere (plugin is deactivated first), clean malicious `.htaccess` files, migrate domains, manage wp-config flags (cron, HTTP block, auto updates, file mods).
+- Remove a specific plugin everywhere (plugin is deactivated first), clean malicious `.htaccess` files (and auto-rewrite compromised root rules to stock WordPress variants), migrate domains, manage wp-config flags (cron, HTTP block, auto updates, file mods).
 - Install and/or activate plugins (single, multi-select, or entire catalog) or install catalog themes across all sites, ensuring plugins are enabled after install.
 - Ensure cron jobs exist whenever `DISABLE_WP_CRON` is enabled (detects PHP version from `/home/<user>/.php-version`).
 - Collects a cross-site plugin inventory in JSON format (records the first site where each plugin is found).

@@ -13,5 +13,6 @@ This file tracks expectations for future contributors. Update it whenever you ch
 - When touching cron logic, consider both enabling and disabling flows (`ensure_cron_job` and `remove_cron_job`).
 - The `audit-zips` action should always prompt for a specific WordPress site, run `wp plugin/theme/core` update checks as that site's user, and compare the reported updates with the ZIP catalog so operators know which archives are stale or missing.
 - The `install-plugin` action installs/activates plugins or installs themes; it must support selecting all catalog entries or a subset (and fall back to manual slugs) so operators can batch-deploy assets before enabling them on test sites.
+- The `.htaccess` cleanup skips WordPress roots but must inspect root `.htaccess` files for known malicious markers; if found, it rewrites them to stock WordPress rules, picking multisite subdomain/subfolder variants when `wp-config.php` declares them.
 
 - ZIP staging under `/tmp/agrad-wp-toolkit/<user>` is required so staged archives are readable by the DirectAdmin user that runs wp-cli. WordPress core reinstalls should either use the staged ZIP (to avoid re-downloading) or fall back to `wp core download --skip-content --force`. Always leave `wp-content`, `.htaccess`, and `wp-config.php` untouched during core reinstalls.
