@@ -27,8 +27,12 @@ def _cleanup_user_htaccess(user_dir: Path) -> None:
         if directadmin.is_wp_root(parent):
             _inspect_wp_root_htaccess(htaccess)
             continue
-        if parent.name == "public_html" or "public_html" in parent.parts:
-            logger.debug("Skipping %s (inside public_html)", htaccess)
+        if "public_html" in parent.parts:
+            try:
+                htaccess.unlink()
+                logger.info("Removed %s", htaccess)
+            except Exception as exc:  # pylint: disable=broad-except
+                logger.error("Failed to remove %s: %s", htaccess, exc)
             continue
         try:
             htaccess.unlink()
