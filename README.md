@@ -9,11 +9,12 @@ It consolidates the previous shell scripts (download, rename, update, clean, mig
 - Force reinstall regardless of current version, while respecting per-item force flags defined in `catalog.json`.
 - Automatically downloads free plugins from WordPress.org and custom premium ZIPs from `config/zip_links.txt`, keeping only the latest versions.
 - Automatically normalises ZIP filenames during updates/installs and maintains `zips/zip_folders.json`.
-- Remove a specific plugin everywhere (plugin is deactivated first), clean malicious `.htaccess` files (and auto-rewrite compromised root rules to stock WordPress variants), migrate domains, manage wp-config flags (cron, HTTP block, auto updates, file mods).
-- Install and/or activate plugins (single, multi-select, or entire catalog) or install catalog themes across all sites, ensuring plugins are enabled after install.
+- Remove a specific plugin everywhere (plugin is deactivated first), clean malicious `.htaccess` files (and auto-rewrite compromised root rules to stock WordPress variants), migrate domains, manage wp-config flags (cron, HTTP block, auto updates, file mods, debug toggles).
+- Install and/or activate plugins (single, multi-select, or entire catalog) or install catalog themes across all sites, ensuring plugins are enabled after install; audit ZIP freshness vs. site-reported updates.
 - Ensure cron jobs exist whenever `DISABLE_WP_CRON` is enabled (detects PHP version from `/home/<user>/.php-version`).
 - Collects a cross-site plugin inventory in JSON format (records the first site where each plugin is found).
 - Audit a single WordPress site to see which plugins/themes/core builds report updates and match them against the ZIP catalog.
+- Security submenu for managing allowed IPs plus applying/restoring iptables rules for SSH (2244), DirectAdmin (8956), MySQL (3306), and FTP (21) with automatic backups.
 - Structured logging to `logs/agrad_wp.log` plus console output.
 - Test suite (`pytest`) covering the config loader, wp-config editor, DirectAdmin discovery, and ZIP repository logic.
 
@@ -40,13 +41,14 @@ python3 -m agrad_wp_toolkit --action install-plugin
 ```
 
 ### Available actions
-`update`, `remove-plugin`, `clean-htaccess`, `migrate-domain`, `wp-config`, `download-free`, `download-links`, `inventory`, `install-plugin` (plugins/themes), `audit-zips`
+Top-level interactive menu is grouped (plugins/themes management, security, etc.). Single-action mode supports: `update`, `remove-plugin`, `clean-htaccess`, `migrate-domain`, `wp-config`, `download-free`, `download-links`, `inventory`, `install-plugin` (plugins/themes), `audit-zips`, `manage-addons`, `security`
 
 ### Configuration files
 - `catalog.json`: master catalog of all plugins/themes/core entries; edit this file to add/remove items or tweak force flags.
 - `config/free_plugins.json`: slugs that can be auto-downloaded or updated from WordPress.org.
 - `config/accessible_hosts.json`: allow list injected into `WP_ACCESSIBLE_HOSTS`.
 - `config/zip_links.txt`: list of premium ZIP URLs consumed by the “Download custom ZIPs” action.
+- `allowed_ips.json`: IP allowlist consumed by the security submenu (auto-created with defaults if missing).
 
 ### ZIP management
 - Store custom update ZIPs inside the `zips/` folder named like `<slug>_v<version>.zip` (WordPress core ZIPs follow the same naming so version comparisons work).

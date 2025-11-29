@@ -18,6 +18,9 @@ HTTP_HOSTS_CONSTANT = "WP_ACCESSIBLE_HOSTS"
 AUTO_UPDATER_CONSTANT = "AUTOMATIC_UPDATER_DISABLED"
 CORE_AUTO_UPDATE_CONSTANT = "WP_AUTO_UPDATE_CORE"
 FILE_MODS_CONSTANT = "DISALLOW_FILE_MODS"
+DEBUG_CONSTANT = "WP_DEBUG"
+DEBUG_LOG_CONSTANT = "WP_DEBUG_LOG"
+DEBUG_DISPLAY_CONSTANT = "WP_DEBUG_DISPLAY"
 
 
 @dataclass
@@ -68,6 +71,7 @@ def run_wp_config_menu() -> None:
             "Update HTTP block settings",
             "Toggle automatic updates",
             "Toggle DISALLOW_FILE_MODS",
+            "Toggle WP_DEBUG (enforce log/display flags)",
         ],
     )
     scope = prompts.ask_from_list("Apply to", ["All users", "Single user"])
@@ -86,6 +90,8 @@ def run_wp_config_menu() -> None:
         _handle_auto_updates(sites)
     elif action == "Toggle DISALLOW_FILE_MODS":
         _handle_file_mods(sites)
+    elif action == "Toggle WP_DEBUG (enforce log/display flags)":
+        _handle_debug(sites)
 
 
 def _handle_wp_cron(sites: list[directadmin.Site]) -> None:
@@ -183,6 +189,16 @@ def _handle_file_mods(sites: list[directadmin.Site]) -> None:
             manager.set_constant(FILE_MODS_CONSTANT, "true")
         else:
             manager.remove_constant(FILE_MODS_CONSTANT)
+
+
+def _handle_debug(sites: list[directadmin.Site]) -> None:
+    enable_debug = prompts.ask_yes_no("Enable WP_DEBUG?", default=False)
+    for site in sites:
+        manager = WPConfigManager(site.path / "wp-config.php")
+        # Always enforce logging to file and hide display
+        manager.set_constant(DEBUG_LOG_CONSTANT, "true")
+        manager.set_constant(DEBUG_DISPLAY_CONSTANT, "false")
+        manager.set_constant(DEBUG_CONSTANT, "true" if enable_debug else "false")
 
 
 def _collect_host_inputs(current_hosts: list[str]) -> list[str]:

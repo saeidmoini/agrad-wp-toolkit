@@ -13,6 +13,7 @@ from .operations import (
     inventory,
     remove_htaccess,
     remove_plugin,
+    security,
     update,
     update_audit,
     wp_config,
@@ -38,6 +39,11 @@ ACTIONS = {
         "Check a site's update list to see which ZIPs are outdated",
         update_audit.run_update_audit,
     ),
+    "manage-addons": (
+        "Manage plugins/themes (submenu)",
+        lambda: manage_plugins_and_themes(),
+    ),
+    "security": ("Security tools (firewall/IP allowlist)", security.run_security_menu),
 }
 
 
@@ -56,12 +62,48 @@ def main() -> None:
         _, handler = ACTIONS[args.action]
         handler()
         return
-    options = {label: handler for label, handler in ACTIONS.values()}
+    options = {
+        "Manage plugins/themes": manage_plugins_and_themes,
+        "Security": security.run_security_menu,
+        "Clean .htaccess files": remove_htaccess.run_htaccess_cleanup,
+        "Migrate domain": domain_migrate.run_domain_migration,
+        "Manage wp-config flags": wp_config.run_wp_config_menu,
+        "Exit": None,
+    }
     while True:
-        choice = prompts.ask_from_list("Select an action", [label for label in options] + ["Exit"])
+        choice = prompts.ask_from_list("Select an action", list(options))
         if choice == "Exit":
             logging.getLogger(__name__).info("Goodbye!")
             break
         action = options.get(choice)
         if action:
             action()
+
+
+def manage_plugins_and_themes() -> None:
+    options = [
+        "Update plugins/themes/core",
+        "Remove a plugin everywhere",
+        "Download free plugins",
+        "Collect plugin inventory (non-catalog only)",
+        "Install/activate plugins or install themes",
+        "Download custom ZIPs from link list",
+        "Audit ZIP freshness vs site updates",
+        "Back",
+    ]
+    mapping = {
+        "Update plugins/themes/core": update.run_interactive_update,
+        "Remove a plugin everywhere": remove_plugin.run_remove_plugin,
+        "Download free plugins": free_downloads.run_free_downloads,
+        "Collect plugin inventory (non-catalog only)": inventory.run_inventory,
+        "Install/activate plugins or install themes": install_activate_plugin.run_install_activate_plugin,
+        "Download custom ZIPs from link list": download_links.run_link_downloader,
+        "Audit ZIP freshness vs site updates": update_audit.run_update_audit,
+    }
+    while True:
+        choice = prompts.ask_from_list("Manage plugins/themes", options)
+        if choice == "Back":
+            break
+        handler = mapping.get(choice)
+        if handler:
+            handler()

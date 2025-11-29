@@ -12,6 +12,7 @@ CATALOG_PATH = ROOT_DIR / "catalog.json"
 WP_ACCESSIBLE_HOSTS_PATH = CONFIG_DIR / "accessible_hosts.json"
 FREE_PLUGINS_PATH = CONFIG_DIR / "free_plugins.json"
 PLUGIN_INVENTORY_PATH = ROOT_DIR / "inventory_plugins.json"
+ALLOWED_IPS_PATH = ROOT_DIR / "allowed_ips.json"
 
 
 def ensure_dirs() -> None:
