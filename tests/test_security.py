@@ -39,7 +39,7 @@ def test_apply_rules_builds_commands(tmp_path, monkeypatch) -> None:
 
     security.apply_rules()
 
-    # Ensure drop rules were added for SSH and a jump in INPUT exists
     flat_calls = [" ".join(cmd) if isinstance(cmd, list) else " ".join(cmd) for cmd in calls]
     assert any("--dport 2244" in cmd and "-j DROP" in cmd for cmd in flat_calls)
     assert any("INPUT" in cmd and "AGRAD_ACCESS" in cmd for cmd in flat_calls)
+    assert any("AGRAD_ACCESS6" in cmd for cmd in flat_calls)

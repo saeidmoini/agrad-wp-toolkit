@@ -113,25 +113,41 @@ def _apply_rules_with_backup() -> None:
 
 def apply_rules() -> None:
     ips = load_allowed_ips()
-    allowed_mysql = set(ips) | {"127.0.0.1", "::1"}
-    allowed_ftp = set(ips) | {"127.0.0.1"}
+    ipv4_allow = [ip for ip in ips if not _is_ipv6(ip)]
+    ipv6_allow = [ip for ip in ips if _is_ipv6(ip)]
+    allowed_mysql = set(ipv4_allow) | {"127.0.0.1"}
+    allowed_ftp = set(ipv4_allow) | {"127.0.0.1"}
 
-    _ensure_chain("AGRAD_ACCESS")
-    _flush_chain("AGRAD_ACCESS")
+    _ensure_chain("AGRAD_ACCESS", ipv6=False)
+    _flush_chain("AGRAD_ACCESS", ipv6=False)
+
+    _ensure_chain("AGRAD_ACCESS6", ipv6=True)
+    _flush_chain("AGRAD_ACCESS6", ipv6=True)
 
     for service, port, protocols in SERVICES:
-        allowed = ips
+        allowed_v4 = ipv4_allow
         if service == "MySQL":
-            allowed = list(allowed_mysql)
+            allowed_v4 = list(allowed_mysql)
         if service == "FTP":
-            allowed = list(allowed_ftp)
+            allowed_v4 = list(allowed_ftp)
         for proto in protocols:
-            for ip in allowed:
+            for ip in allowed_v4:
                 _run(["iptables", "-A", "AGRAD_ACCESS", "-p", proto, "--dport", str(port), "-s", ip, "-j", "ACCEPT"])
             _run(["iptables", "-A", "AGRAD_ACCESS", "-p", proto, "--dport", str(port), "-j", "DROP"])
-        logger.info("Applied rules for %s (port %s)", service, port)
+        logger.info("Applied IPv4 rules for %s (port %s)", service, port)
 
-    _ensure_input_jump("AGRAD_ACCESS")
+        # IPv6: if no IPv6 allowlist, drop everything for these ports
+        for proto in protocols:
+            for ip in ipv6_allow:
+                _run(["ip6tables", "-A", "AGRAD_ACCESS6", "-p", proto, "--dport", str(port), "-s", ip, "-j", "ACCEPT"])
+            _run(["ip6tables", "-A", "AGRAD_ACCESS6", "-p", proto, "--dport", str(port), "-j", "DROP"])
+        if ipv6_allow:
+            logger.info("Applied IPv6 rules for %s (port %s)", service, port)
+        else:
+            logger.info("Blocked IPv6 traffic for %s (port %s)", service, port)
+
+    _ensure_input_jump("AGRAD_ACCESS", ipv6=False)
+    _ensure_input_jump("AGRAD_ACCESS6", ipv6=True)
     logger.info("Firewall rules applied.")
 
 
@@ -162,20 +178,23 @@ def _latest_backup() -> Path | None:
     return backups[-1] if backups else None
 
 
-def _ensure_chain(chain: str) -> None:
-    result = subprocess.run(["iptables", "-L", chain], capture_output=True, text=True, check=False)
+def _ensure_chain(chain: str, ipv6: bool = False) -> None:
+    binary = "ip6tables" if ipv6 else "iptables"
+    result = subprocess.run([binary, "-L", chain], capture_output=True, text=True, check=False)
     if result.returncode != 0:
-        _run(["iptables", "-N", chain])
+        _run([binary, "-N", chain])
 
 
-def _flush_chain(chain: str) -> None:
-    _run(["iptables", "-F", chain])
+def _flush_chain(chain: str, ipv6: bool = False) -> None:
+    binary = "ip6tables" if ipv6 else "iptables"
+    _run([binary, "-F", chain])
 
 
-def _ensure_input_jump(chain: str) -> None:
-    result = subprocess.run(["iptables", "-C", "INPUT", "-j", chain], capture_output=True, text=True, check=False)
+def _ensure_input_jump(chain: str, ipv6: bool = False) -> None:
+    binary = "ip6tables" if ipv6 else "iptables"
+    result = subprocess.run([binary, "-C", "INPUT", "-j", chain], capture_output=True, text=True, check=False)
     if result.returncode != 0:
-        _run(["iptables", "-I", "INPUT", "1", "-j", chain])
+        _run([binary, "-I", "INPUT", "1", "-j", chain])
 
 
 def _run(cmd: List[str]) -> Tuple[int, str, str]:
@@ -183,3 +202,7 @@ def _run(cmd: List[str]) -> Tuple[int, str, str]:
     if result.returncode != 0:
         logger.error("Command failed (%s): %s", " ".join(cmd), result.stderr.strip())
     return result.returncode, result.stdout, result.stderr
+
+
+def _is_ipv6(ip: str) -> bool:
+    return ":" in ip
