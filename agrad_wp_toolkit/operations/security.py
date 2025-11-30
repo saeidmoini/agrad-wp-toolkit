@@ -25,6 +25,7 @@ SERVICES = [
     ("DirectAdmin", 8956, ["tcp"]),
     ("MySQL", 3306, ["tcp"]),
     ("FTP", 21, ["tcp"]),
+    ("LiteSpeed Admin", 7080, ["tcp"]),
 ]
 
 
