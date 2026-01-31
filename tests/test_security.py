@@ -43,3 +43,36 @@ def test_apply_rules_builds_commands(tmp_path, monkeypatch) -> None:
     assert any("--dport 2244" in cmd and "-j DROP" in cmd for cmd in flat_calls)
     assert any("INPUT" in cmd and "AGRAD_ACCESS" in cmd for cmd in flat_calls)
     assert any("AGRAD_ACCESS6" in cmd for cmd in flat_calls)
+
+
+def test_disable_rules_removes_chains(tmp_path, monkeypatch) -> None:
+    """Test that disable_rules removes custom chains and INPUT jumps."""
+    target = tmp_path / "allowed_ips.json"
+    monkeypatch.setattr(paths, "ALLOWED_IPS_PATH", target)
+    security.save_allowed_ips(["10.0.0.1"])
+    monkeypatch.setattr(paths, "ROOT_DIR", tmp_path)
+
+    calls = []
+
+    def fake_run(cmd, capture_output=True, text=True, check=False, input=None):  # type: ignore[override]
+        calls.append(cmd)
+        # Simulate that chains exist
+        if "-C" in cmd or "-L" in cmd:
+            return DummyResult(0, stdout="")
+        return DummyResult(0, stdout="")
+
+    monkeypatch.setattr(security, "_run", lambda cmd: (calls.append(cmd) or (0, "", "")))  # type: ignore
+    monkeypatch.setattr(security.subprocess, "run", fake_run)  # type: ignore
+
+    security.disable_rules()
+
+    flat_calls = [" ".join(cmd) if isinstance(cmd, list) else " ".join(cmd) for cmd in calls]
+    # Check that INPUT jumps are removed
+    assert any("-D INPUT -j AGRAD_ACCESS" in cmd for cmd in flat_calls)
+    assert any("-D INPUT -j AGRAD_ACCESS6" in cmd for cmd in flat_calls)
+    # Check that chains are flushed
+    assert any("-F AGRAD_ACCESS" in cmd for cmd in flat_calls)
+    assert any("-F AGRAD_ACCESS6" in cmd for cmd in flat_calls)
+    # Check that chains are deleted
+    assert any("-X AGRAD_ACCESS" in cmd for cmd in flat_calls)
+    assert any("-X AGRAD_ACCESS6" in cmd for cmd in flat_calls)

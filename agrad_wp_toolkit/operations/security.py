@@ -35,6 +35,7 @@ def run_security_menu() -> None:
         "Add allowed IP",
         "Remove allowed IP",
         "Apply firewall rules",
+        "Disable firewall rules",
         "Restore last firewall backup",
         "Back",
     ]
@@ -48,6 +49,8 @@ def run_security_menu() -> None:
             _remove_ip()
         elif choice == "Apply firewall rules":
             _apply_rules_with_backup()
+        elif choice == "Disable firewall rules":
+            _disable_rules()
         elif choice == "Restore last firewall backup":
             _restore_backup()
         elif choice == "Back":
@@ -110,6 +113,38 @@ def _apply_rules_with_backup() -> None:
     backup_path = backup_firewall()
     logger.info("Firewall backup saved to %s", backup_path)
     apply_rules()
+
+
+def _disable_rules() -> None:
+    """Disable firewall rules by removing custom chains and restoring full access."""
+    confirm = prompts.ask_yes_no(
+        "This will disable all firewall restrictions and restore full access. Continue?",
+        default=False
+    )
+    if not confirm:
+        logger.info("Operation cancelled.")
+        return
+
+    logger.info("Disabling firewall rules...")
+    disable_rules()
+    logger.info("Firewall rules disabled. Full access restored.")
+
+
+def disable_rules() -> None:
+    """Remove AGRAD firewall chains and restore unrestricted access."""
+    # Remove jump rules from INPUT chain
+    _remove_input_jump("AGRAD_ACCESS", ipv6=False)
+    _remove_input_jump("AGRAD_ACCESS6", ipv6=True)
+
+    # Flush custom chains
+    _flush_chain("AGRAD_ACCESS", ipv6=False)
+    _flush_chain("AGRAD_ACCESS6", ipv6=True)
+
+    # Delete custom chains
+    _delete_chain("AGRAD_ACCESS", ipv6=False)
+    _delete_chain("AGRAD_ACCESS6", ipv6=True)
+
+    logger.info("All AGRAD firewall chains removed.")
 
 
 def apply_rules() -> None:
@@ -196,6 +231,28 @@ def _ensure_input_jump(chain: str, ipv6: bool = False) -> None:
     result = subprocess.run([binary, "-C", "INPUT", "-j", chain], capture_output=True, text=True, check=False)
     if result.returncode != 0:
         _run([binary, "-I", "INPUT", "1", "-j", chain])
+
+
+def _remove_input_jump(chain: str, ipv6: bool = False) -> None:
+    """Remove jump rule from INPUT chain to the custom chain."""
+    binary = "ip6tables" if ipv6 else "iptables"
+    # Check if the jump rule exists
+    result = subprocess.run([binary, "-C", "INPUT", "-j", chain], capture_output=True, text=True, check=False)
+    if result.returncode == 0:
+        # Rule exists, remove it
+        _run([binary, "-D", "INPUT", "-j", chain])
+        logger.debug("Removed INPUT jump to %s", chain)
+
+
+def _delete_chain(chain: str, ipv6: bool = False) -> None:
+    """Delete a custom iptables chain."""
+    binary = "ip6tables" if ipv6 else "iptables"
+    # Check if chain exists
+    result = subprocess.run([binary, "-L", chain], capture_output=True, text=True, check=False)
+    if result.returncode == 0:
+        # Chain exists, delete it
+        _run([binary, "-X", chain])
+        logger.debug("Deleted chain %s", chain)
 
 
 def _run(cmd: List[str]) -> Tuple[int, str, str]:

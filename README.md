@@ -14,7 +14,7 @@ It consolidates the previous shell scripts (download, rename, update, clean, mig
 - Ensure cron jobs exist whenever `DISABLE_WP_CRON` is enabled (detects PHP version from `/home/<user>/.php-version`).
 - Collects a cross-site plugin inventory in JSON format (records the first site where each plugin is found).
 - Audit a single WordPress site to see which plugins/themes/core builds report updates and match them against the ZIP catalog.
-- Security submenu for managing allowed IPs plus applying/restoring iptables rules for SSH (2244), DirectAdmin (8956), MySQL (3306), FTP (21), and LiteSpeed admin (7080) with automatic backups.
+- Security submenu for managing allowed IPs plus applying/disabling/restoring iptables rules for SSH (2244), DirectAdmin (8956), MySQL (3306), FTP (21), and LiteSpeed admin (7080) with automatic backups.
 - Structured logging to `logs/agrad_wp.log` plus console output.
 - Test suite (`pytest`) covering the config loader, wp-config editor, DirectAdmin discovery, and ZIP repository logic.
 
