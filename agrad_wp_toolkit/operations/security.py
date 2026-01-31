@@ -154,12 +154,14 @@ def apply_rules() -> None:
     allowed_mysql = set(ipv4_allow) | {"127.0.0.1"}
     allowed_ftp = set(ipv4_allow) | {"127.0.0.1"}
 
+    logger.info("Preparing firewall chains...")
     _ensure_chain("AGRAD_ACCESS", ipv6=False)
     _flush_chain("AGRAD_ACCESS", ipv6=False)
 
     _ensure_chain("AGRAD_ACCESS6", ipv6=True)
     _flush_chain("AGRAD_ACCESS6", ipv6=True)
 
+    logger.info("Applying rules for %d IPs across %d services...", len(ipv4_allow), len(SERVICES))
     for service, port, protocols in SERVICES:
         allowed_v4 = ipv4_allow
         if service == "MySQL":
